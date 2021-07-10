@@ -1,5 +1,6 @@
 # Human Gait Analysis
 
+Dataset link: https://www.nature.com/articles/s41597-020-0563-y?sf235774480=1
 
 | Trial number (#)  | Walking surface condition | Sample duration (s); Mean (standard deviation) |
 | ----------------- | ------------------------- | ---------------------------------------------- |
