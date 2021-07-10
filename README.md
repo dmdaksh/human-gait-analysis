@@ -1,4 +1,4 @@
-# human-gait-analysis
+# Human Gait Analysis
 
 
 | Trial number (#)  | Walking surface condition | Sample duration (s); Mean (standard deviation) |
