@@ -1,7 +1,6 @@
 # human-gait-analysis
 
 
-
 | Trial number (#)  | Walking surface condition | Sample duration (s); Mean (standard deviation) |
 | ----------------- | ------------------------- | ---------------------------------------------- |
 | 1-3               | Calibration (CALIB)       | 19.29 (3.14)                                   |
