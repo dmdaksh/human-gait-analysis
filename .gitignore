@@ -131,3 +131,6 @@ dmypy.json
 
 # VSCode configs
 .vscode/
+
+# Logs
+logs/
