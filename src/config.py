@@ -2,16 +2,16 @@ import logging
 
 
 LOG_LEVELS = {
-    'critical': logging.CRITICAL,
-    'error': logging.ERROR,
-    'warning': logging.WARNING,
-    'info': logging.INFO,
-    'debug': logging.DEBUG
+      'critical':   logging.CRITICAL
+    , 'error':      logging.ERROR
+    , 'warning':    logging.WARNING
+    , 'info':       logging.INFO
+    , 'debug':      logging.DEBUG
 }
 MAT_FILE = '../gait_data/22008945'
 INPUT_DATA = '../gait_data/input_data/'
 SURFACE_TRIALS = {
-    'CALIB':    [1, 2, 3]                   # Calibration
+      'CALIB':  [1, 2, 3]                   # Calibration
     , 'FE':     [4, 5, 6, 7, 8, 9]          # Flat even
     , 'CS':     [10, 11, 12, 13, 14, 15]    # Cobble stone
     , 'StrU':   [16, 18, 20, 22, 24, 26]    # Upstairs
@@ -21,12 +21,15 @@ SURFACE_TRIALS = {
     , 'BnkL':   [40, 42, 44, 46, 48, 50]    # Bank left
     , 'BnkR':   [41, 43, 45, 47, 49, 51]    # Bank right
     , 'GR':     [52, 53, 54, 55, 56, 57]    # Grass
-    }
-SENSOR_LOCS = {
-    'Trunk':            'CC.txt'
-    , 'Wrist':          '95.txt'
-    , 'Right thigh':    '93.txt'
-    , 'Left thigh':     '8B.txt'
-    , 'Right shank':    '9B.txt'
-    , 'Left shank':     'B6.txt'
 }
+SURFACES = {'CALIB', 'FE', 'CS', 'StrU', 'StrD', 'SlpU', 'SlpD', 'BnkL', 'BnkR', 'GR'}
+SENSOR_LOCS = {
+      'Trunk':          'CC'
+    , 'Wrist':          '95'
+    , 'RightThigh':     '93'
+    , 'LeftThigh':      '8B'
+    , 'RightShank':     '9B'
+    , 'LeftShank':      'B6'
+}
+LOCS = {'Trunk', 'Wrist', 'RightThigh', 'LeftThigh', 'RightShank', 'LeftShank'}
+SUBJECTS = 30
