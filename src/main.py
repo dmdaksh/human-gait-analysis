@@ -25,4 +25,4 @@ if __name__ == '__main__':
 
     logger.debug('Instantiating GaitDataset class')
     dataset = GaitDataset(SURFACES-exclude_surface, LOCS-exclude_loc)
-    
+    logger.info('No. of samples: {}'.format(len(dataset)))    
