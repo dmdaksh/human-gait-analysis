@@ -13,6 +13,7 @@ class Config:
   })
   MAT_FILE: str = field(default='../gait_data/22008945')
   INPUT_DATA: str = field(default='../../../../input_data/')
+  PREPROCESSED_ARR: str = field(default='preprocessed_arr.pkl')
   # INPUT_DATA: str = field(default='../gait_data/input_data/')
   SURFACE_TRIALS: dict = field(default_factory=lambda:{
         'CALIB':  [1, 2, 3]                   # Calibration
@@ -50,7 +51,7 @@ class Flags:
   BATCH_SIZE: int = field(default=1024)
   LEARNING_RATE: float = field(default=1e-3)
   MOMENTUM: float = field(default=0.5)
-  EPOCHS: int = field(default=10)
+  EPOCHS: int = field(default=1)
   LOG_STEPS: int = field(default=10)
   METRICS_DEBUG: bool = field(default=False)
   WORLD_SIZE: int = field(default=8)

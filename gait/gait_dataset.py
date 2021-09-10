@@ -7,9 +7,9 @@ logger = log.get_logger(__name__)
 
 class GaitDataset(Dataset):
     def __init__(self, acc, gyr, mag, targets, device=None) -> None:
-        self.acc = torch.tensor(acc, dtype=torch.float, device=device)
-        self.gyr = torch.tensor(gyr, dtype=torch.float, device=device)
-        self.mag = torch.tensor(mag, dtype=torch.float, device=device)
+        self.acc = torch.tensor(acc, dtype=torch.float32, device=device)
+        self.gyr = torch.tensor(gyr, dtype=torch.float32, device=device)
+        self.mag = torch.tensor(mag, dtype=torch.float32, device=device)
         self.targets = torch.tensor(targets, dtype=torch.long, device=device)
 
     def __len__(self):
