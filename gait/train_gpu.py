@@ -15,6 +15,52 @@ import time
 import gc
 import numpy as np
 from tqdm import tqdm
+from sklearn.model_selection import KFold
+
+
+def train_func(model, gait_loader, epoch, optimizer, loss_func):
+    losses = []
+    accuracies = []
+    pbar = tqdm(enumerate(gait_loader), desc=f'epoch {epoch+1}, steps:')
+    for step, (acc, gyr, mag, targets) in pbar:
+        model.train()
+        optimizer.zero_grad()
+
+        output = model(acc, gyr, mag)
+
+        loss = loss_func(output, targets)
+
+        loss.backward()
+        losses.append(loss.item())
+
+        optimizer.step()
+
+
+        model.eval()
+        with torch.no_grad():
+            output = model(acc, gyr, mag)
+            pred = torch.max(output, dim = 1)[1]
+            acc = (pred == targets).float().mean()
+            accuracies.append(acc.item())
+        
+        pbar.set_postfix(acc = np.mean(accuracies), loss = np.mean(losses))
+
+def eval_func(model, gait_loader, epoch, optimizer, loss_func):
+    model.eval()
+    losses = []
+    accuracies = []
+    pbar = tqdm(enumerate(gait_loader), desc=f'epoch {epoch+1}, val_steps:')
+    for step, (acc, gyr, mag, targets) in pbar:
+        with torch.no_grad():
+            output = model(acc, gyr, mag)
+            loss = loss_func(output, targets)
+            losses.append(loss.item())
+            pred = torch.max(output, dim = 1)[1]
+            acc = (pred == targets).float().mean()
+            accuracies.append(acc.item())
+        
+        pbar.set_postfix(val_acc = np.mean(accuracies), val_loss = np.mean(losses))
+
 
 def run(FLAGS):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -22,52 +68,41 @@ def run(FLAGS):
     # read data, data loader
     # data = ReadData()._init_data(FLAGS)
     print('loading')
-    data = ReadData().load_processed_data('preprocessed_data.pkl')
+    acc, gyr, mag, targets = ReadData().load_processed_data('preprocessed_data.pkl')
+
     print('loaded')
-    gait_ds = GaitDataset(*data, device=device)
 
-    gait_loader = torch.utils.data.DataLoader(
-        dataset=gait_ds,
-        batch_size=FLAGS['BATCH_SIZE'],
-        drop_last=True,
-        shuffle=True
-    )
+    kf = KFold(n_splits=5)
+    for train_idx, eval_idx in kf.split(targets):
+        print(train_idx.shape, eval_idx.shape)
+        gait_ds = GaitDataset(acc=acc[train_idx], gyr=gyr[train_idx], mag=mag[train_idx], targets=targets[train_idx], device=device)
 
-    #init model, optimizer, loss_func, scheduler
-    model = CNN().to(device=device)
+        gait_loader = torch.utils.data.DataLoader(
+            dataset=gait_ds,
+            batch_size=FLAGS['BATCH_SIZE'],
+            drop_last=True,
+            shuffle=True
+        )
 
-    optimizer = optim.Adam(model.parameters(), lr = FLAGS['LEARNING_RATE'])
-    loss_func = nn.CrossEntropyLoss()
-    # if FLAGS['SCHEDULER']:
-    #     scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=lambda epoch: 0.9**epoch)
+        eval_gait_ds = GaitDataset(acc=acc[eval_idx], gyr=gyr[eval_idx], mag=mag[eval_idx], targets=targets[eval_idx], device=device)
 
-    # training
-    for epoch in range(FLAGS['EPOCHS']):
-        losses = []
-        accuracies = []
-        pbar = tqdm(enumerate(gait_loader), desc=f'epoch {epoch+1}, steps:')
-        for step, (acc, gyr, mag, targets) in pbar:
-            model.train()
+        eval_gait_loader = torch.utils.data.DataLoader(
+            dataset=eval_gait_ds,
+            batch_size=eval_idx.shape[0]
+        )
 
-            optimizer.zero_grad()
+        #init model, optimizer, loss_func, scheduler
+        model = CNN().to(device=device)
 
-            output = model(acc, gyr, mag)
+        optimizer = optim.Adam(model.parameters(), lr = FLAGS['LEARNING_RATE'])
+        loss_func = nn.CrossEntropyLoss()
+        # if FLAGS['SCHEDULER']:
+        #     scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=lambda epoch: 0.9**epoch)
 
-            loss = loss_func(output, targets)
+        
 
-            loss.backward()
-            losses.append(loss.item())
-
-            optimizer.step()
-
-
-            model.eval()
-            with torch.no_grad():
-                output = model(acc, gyr, mag)
-                pred = torch.max(output, dim = 1)[1]
-                acc = (pred == targets).float().mean()
-                accuracies.append(acc.item())
-            
-            pbar.set_postfix(acc = np.mean(accuracies), loss = np.mean(losses))
-
+        for epoch in range(FLAGS['EPOCHS']):
+            # training
+            train_func(model, gait_loader, epoch, optimizer, loss_func)
+            eval_func(model, eval_gait_loader, epoch, optimizer, loss_func)
 
