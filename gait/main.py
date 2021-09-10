@@ -1,3 +1,4 @@
+from gait.read_data import ReadData
 from gait.config import Config, Flags
 # from gait.gait_dataset import GaitDataset
 # from gait.read_data import ReadData
@@ -55,7 +56,6 @@ if __name__ == '__main__':
     #     samples['surface_labels'].shape
     # ))
     # print(samples['surface_labels'].dtype)
-
-
+    # ReadData().dump_processed_data(FLAGS, 'preprocessed_data.pkl')
 
 

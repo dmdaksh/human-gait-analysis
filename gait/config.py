@@ -36,7 +36,7 @@ class Config:
       , 'LeftShank':      'B6'
   })
   LOCS: set = field(default_factory=lambda:{'Trunk', 'Wrist', 'RightThigh', 'LeftThigh', 'RightShank', 'LeftShank'})
-  SUBJECTS: int = field(default=5)
+  SUBJECTS: int = field(default=30)
 
 
 @dataclass
@@ -50,7 +50,7 @@ class Flags:
   BATCH_SIZE: int = field(default=1024)
   LEARNING_RATE: float = field(default=1e-3)
   MOMENTUM: float = field(default=0.5)
-  EPOCHS: int = field(default=5)
+  EPOCHS: int = field(default=10)
   LOG_STEPS: int = field(default=10)
   METRICS_DEBUG: bool = field(default=False)
   WORLD_SIZE: int = field(default=8)

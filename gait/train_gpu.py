@@ -14,13 +14,16 @@ import torch.optim as optim
 import time
 import gc
 import numpy as np
+from tqdm import tqdm
 
 def run(FLAGS):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # read data, data loader
-    data = ReadData()._init_data(FLAGS)
-
+    # data = ReadData()._init_data(FLAGS)
+    print('loading')
+    data = ReadData().load_processed_data('preprocessed_data.pkl')
+    print('loaded')
     gait_ds = GaitDataset(*data, device=device)
 
     gait_loader = torch.utils.data.DataLoader(
@@ -39,30 +42,32 @@ def run(FLAGS):
     #     scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=lambda epoch: 0.9**epoch)
 
     # training
-    losses = []
-    accuracies = []
-    for step, (acc, gyr, mag, targets) in enumerate(gait_loader):
-        model.train()
+    for epoch in range(FLAGS['EPOCHS']):
+        losses = []
+        accuracies = []
+        pbar = tqdm(enumerate(gait_loader), desc=f'epoch {epoch+1}, steps:')
+        for step, (acc, gyr, mag, targets) in pbar:
+            model.train()
 
-        optimizer.zero_grad()
+            optimizer.zero_grad()
 
-        output = model(acc, gyr, mag)
-
-        loss = loss_func(output, targets)
-
-        loss.backward()
-        losses.append(loss.item())
-
-        optimizer.step()
-
-
-        model.eval()
-        with torch.no_grad():
             output = model(acc, gyr, mag)
-            pred = torch.max(output, dim = 1)[1]
-            acc = (pred == targets).float().mean()
-            accuracies.append(acc)
-        
-        print(f'step: {step}, acc: {np.mean(accuracies)}, loss: {np.mean(losses)}')
+
+            loss = loss_func(output, targets)
+
+            loss.backward()
+            losses.append(loss.item())
+
+            optimizer.step()
+
+
+            model.eval()
+            with torch.no_grad():
+                output = model(acc, gyr, mag)
+                pred = torch.max(output, dim = 1)[1]
+                acc = (pred == targets).float().mean()
+                accuracies.append(acc.item())
+            
+            pbar.set_postfix(acc = np.mean(accuracies), loss = np.mean(losses))
 
 

@@ -8,7 +8,7 @@ import pandas as pd
 import re
 from tqdm import tqdm
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, RobustScaler, StandardScaler
-
+import pickle as pkl
 
 logger = log.get_logger(__name__)
 
@@ -62,7 +62,7 @@ class ReadData:
 
                 # skipping nan files
                 if(np.isnan(df_arr).sum()):
-                    print(np.isnan(df_arr).sum())
+                    # print(f'{filename}: {np.isnan(df_arr).sum()}')
                     continue
                 
                 df_arr = StandardScaler().fit_transform(df_arr)
@@ -87,4 +87,17 @@ class ReadData:
             np.asarray(mag_samples, dtype=np.float).transpose(0,2,1),
             np.asarray(surface_labels, dtype=np.long).reshape(-1)
         )
+    
+    def dump_processed_data(self, FLAGS, path):
+        data = self._init_data(FLAGS)
+        with open(path, 'wb') as f:
+            pkl.dump(data, f)
+
+    def load_processed_data(self, path):
+        with open(path, 'rb') as f:
+            data = pkl.load(f)
+        return data
+
+
+
 
