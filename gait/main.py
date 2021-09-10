@@ -5,7 +5,8 @@ from gait import log
 from dataclasses import asdict
 import argparse
 import time
-from gait.train import run
+# from gait.train import run
+from gait.train_gpu import run
 
 if __name__ == '__main__':
     config_dict = asdict(Config())

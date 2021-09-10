@@ -81,7 +81,7 @@ class CNN(nn.Module):
         x = F.relu(self.fc2(x))
         logger.debug(f'fc2 x.shape: {x.shape}')
         
-        x = F.log_softmax(self.fc3(x), dim=1)
+        x = self.fc3(x)
         # x = self.fc3(x)
         logger.debug(f'fc3 x.shape: {x.shape}')
 

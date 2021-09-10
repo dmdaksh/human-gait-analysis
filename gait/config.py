@@ -36,7 +36,7 @@ class Config:
       , 'LeftShank':      'B6'
   })
   LOCS: set = field(default_factory=lambda:{'Trunk', 'Wrist', 'RightThigh', 'LeftThigh', 'RightShank', 'LeftShank'})
-  SUBJECTS: int = field(default=30)
+  SUBJECTS: int = field(default=5)
 
 
 @dataclass
@@ -54,6 +54,7 @@ class Flags:
   LOG_STEPS: int = field(default=10)
   METRICS_DEBUG: bool = field(default=False)
   WORLD_SIZE: int = field(default=8)
+  SCHEDULER: bool = field(default=False)
 
 
 
