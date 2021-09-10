@@ -2,13 +2,15 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import sys
 import os
-from src import config
+from gait.config import Config
+from dataclasses import asdict
 
+config_dict = asdict(Config())
 
 log_dir_path = 'logs/'
 log_filename = 'human_gait_analysis.log'
 # default logging level is warning
-log_level = config.LOG_LEVELS.get(os.environ.get('LOG_LEVEL')) if os.environ.get('LOG_LEVEL') != None else logging.WARNING
+log_level = config_dict['LOG_LEVELS'].get(os.environ.get('LOG_LEVEL')) if os.environ.get('LOG_LEVEL') != None else logging.WARNING
 formatter = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 # formatter = logging.Formatter("[%(levelname)s] - %(pathname)s:%(lineno)d - %(asctime)s - %(name)s - : %(message)s")
 
