@@ -1,4 +1,4 @@
-from gait.log import get_logger
+from gait.log import get_logger, LoggerWriter
 from gait.models import CNN
 from gait.gait_dataset import GaitDataset
 from gait.models import CNN
@@ -7,10 +7,15 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import time
+import sys
 import numpy as np
 from tqdm import tqdm
 from sklearn.model_selection import KFold
 
+
+logger = get_logger(__name__)
+# sys.stdout=LoggerWriter(logger.info)
+# sys.stderr=LoggerWriter(logger.error)
 
 def train_func(model, gait_loader, epoch, optimizer, loss_func):
     losses = []
@@ -32,7 +37,7 @@ def train_func(model, gait_loader, epoch, optimizer, loss_func):
 
         scaler.scale(loss).backward()
 
-        scaler.step()
+        scaler.step(optimizer)
 
         scaler.update()
 
@@ -52,7 +57,7 @@ def eval_func(model, gait_loader, epoch, optimizer, loss_func):
     model.eval()
     losses = []
     accuracies = []
-    pbar = tqdm(enumerate(gait_loader), desc=f'epoch {epoch+1}, val_steps:')
+    pbar = tqdm(enumerate(gait_loader), desc=f'validation:')
     for step, (acc, gyr, mag, targets) in pbar:
         with torch.no_grad():
             output = model(acc, gyr, mag)
@@ -62,7 +67,7 @@ def eval_func(model, gait_loader, epoch, optimizer, loss_func):
             acc = (pred == targets).float().mean()
             accuracies.append(acc.item())
         
-        pbar.set_postfix(val_acc = np.mean(accuracies), val_loss = np.mean(losses))
+        pbar.set_postfix(acc = np.mean(accuracies), loss = np.mean(losses))
 
 
 def kfold_run(FLAGS, config_dict):
@@ -72,7 +77,9 @@ def kfold_run(FLAGS, config_dict):
     acc, gyr, mag, targets = ReadData().load_processed_data(config_dict['PREPROCESSED_ARR'])
 
     kf = KFold(n_splits=5)
-    for train_idx, eval_idx in kf.split(targets):
+    for fold, (train_idx, eval_idx) in enumerate(kf.split(targets)):
+        print(f'\nfold: {fold+1}\n')
+
         gait_ds = GaitDataset(acc=acc[train_idx], gyr=gyr[train_idx], mag=mag[train_idx], targets=targets[train_idx], device=device)
 
         gait_loader = torch.utils.data.DataLoader(
