@@ -7,7 +7,7 @@ from dataclasses import asdict
 import argparse
 import time
 import os
-# from gait.train import run
+# from gait.train_tpu import run
 from gait.train_gpu import kfold_run
 
 if __name__ == '__main__':

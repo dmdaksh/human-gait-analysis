@@ -3,6 +3,7 @@ from gait.models import CNN
 from gait.gait_dataset import GaitDataset
 from gait.models import CNN
 from gait.read_data import ReadData
+from gait.gait_dataloader import GaitDataLoader
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -17,14 +18,13 @@ logger = get_logger(__name__)
 # sys.stdout=LoggerWriter(logger.info)
 # sys.stderr=LoggerWriter(logger.error)
 
-def train_func(model, gait_loader, epoch, optimizer, loss_func):
+def train_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
     losses = []
     accuracies = []
-    pbar = tqdm(enumerate(gait_loader), desc=f'epoch {epoch+1}, steps:')
     
     scaler = torch.cuda.amp.GradScaler()
 
-    for step, (acc, gyr, mag, targets) in pbar:
+    for step, (acc, gyr, mag, targets) in enumerate(gait_loader):
         # training
         model.train()
         optimizer.zero_grad()
@@ -50,15 +50,16 @@ def train_func(model, gait_loader, epoch, optimizer, loss_func):
             acc = (pred == targets).float().mean()
             accuracies.append(acc.item())
         
-        pbar.set_postfix(acc = np.mean(accuracies), loss = np.mean(losses))
+        print(f'epoch[{epoch}], step {step}/{FLAGS["EPOCHS"]//FLAGS["BATCH_SIZE"]}: acc = {np.mean(accuracies)}, loss = {np.mean(losses)}', end='\r')
+    print('\b', end=', ')
 
 
-def eval_func(model, gait_loader, epoch, optimizer, loss_func):
+def eval_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
     model.eval()
     losses = []
     accuracies = []
-    pbar = tqdm(enumerate(gait_loader), desc=f'validation:')
-    for step, (acc, gyr, mag, targets) in pbar:
+    
+    for acc, gyr, mag, targets in gait_loader:
         with torch.no_grad():
             output = model(acc, gyr, mag)
             loss = loss_func(output, targets)
@@ -67,7 +68,7 @@ def eval_func(model, gait_loader, epoch, optimizer, loss_func):
             acc = (pred == targets).float().mean()
             accuracies.append(acc.item())
         
-        pbar.set_postfix(acc = np.mean(accuracies), loss = np.mean(losses))
+        print(F'val_acc = {np.mean(accuracies)}, val_loss = {np.mean(losses)}')
 
 
 def kfold_run(FLAGS, config_dict):
@@ -75,25 +76,27 @@ def kfold_run(FLAGS, config_dict):
 
     # read data, data loader
     acc, gyr, mag, targets = ReadData().load_processed_data(config_dict['PREPROCESSED_ARR'])
+    
+    acc = torch.tensor(acc, dtype=torch.float32, device=device)
+    gyr = torch.tensor(gyr, dtype=torch.float32, device=device)
+    mag = torch.tensor(mag, dtype=torch.float32, device=device)
+    targets = torch.tensor(targets, dtype=torch.long, device=device)
 
     kf = KFold(n_splits=5)
     for fold, (train_idx, eval_idx) in enumerate(kf.split(targets)):
         print(f'\nfold: {fold+1}\n')
 
-        gait_ds = GaitDataset(acc=acc[train_idx], gyr=gyr[train_idx], mag=mag[train_idx], targets=targets[train_idx], device=device)
-
-        gait_loader = torch.utils.data.DataLoader(
-            dataset=gait_ds,
+        train_loader = GaitDataLoader(
+            acc[train_idx], gyr[train_idx], mag[train_idx], targets[train_idx],
             batch_size=FLAGS['BATCH_SIZE'],
-            drop_last=True,
-            shuffle=True
+            shuffle=True,
+            drop_last=True
         )
 
-        eval_gait_ds = GaitDataset(acc=acc[eval_idx], gyr=gyr[eval_idx], mag=mag[eval_idx], targets=targets[eval_idx], device=device)
-
-        eval_gait_loader = torch.utils.data.DataLoader(
-            dataset=eval_gait_ds,
-            batch_size=eval_idx.shape[0]
+        eval_loader = GaitDataLoader(
+            acc[eval_idx], gyr[eval_idx], mag[eval_idx], targets[eval_idx],
+            batch_size=eval_idx.shape[0],
+            shuffle=False
         )
 
         #init model, optimizer, loss_func, scheduler
@@ -108,6 +111,6 @@ def kfold_run(FLAGS, config_dict):
 
         for epoch in range(FLAGS['EPOCHS']):
             # training
-            train_func(model, gait_loader, epoch, optimizer, loss_func)
-            eval_func(model, eval_gait_loader, epoch, optimizer, loss_func)
+            train_func(model, train_loader, epoch, optimizer, loss_func, FLAGS)
+            eval_func(model, eval_loader, epoch, optimizer, loss_func, FLAGS)
 
