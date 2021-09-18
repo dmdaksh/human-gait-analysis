@@ -12,10 +12,10 @@ class CNN(nn.Module):
         super().__init__()
         
         self.conv1          = nn.Conv1d(in_channels=3, out_channels=16, kernel_size=3, stride=1, dilation=2)
-        self.dropout2d1     = nn.Dropout2d(p=0.25)
+        self.dropout2d1     = nn.Dropout2d(p=0.125)
         # self.batchnorm1   =   nn.BatchNorm1d(num_features=8)
         self.conv1_1        = nn.Conv1d(in_channels=16, out_channels=16, kernel_size=3, stride=1, dilation=2)
-        self.dropout2d1_1   = nn.Dropout2d(p=0.25)
+        self.dropout2d1_1   = nn.Dropout2d(p=0.125)
         # self.batchnorm1_1 =   nn.BatchNorm1d(num_features=16)
 
         self.conv2          = nn.Conv1d(in_channels=16, out_channels=64, kernel_size=5, stride=2, dilation=2)
@@ -40,7 +40,7 @@ class CNN(nn.Module):
         self.dropout2 = nn.Dropout(p=0.25)
         self.fc2 = nn.Linear(in_features=1024, out_features=128)
         
-        self.dropout3 = nn.Dropout(p=0.25)
+        self.dropout3 = nn.Dropout(p=0.125)
         self.fc3 = nn.Linear(in_features=128, out_features=9)
 
     
