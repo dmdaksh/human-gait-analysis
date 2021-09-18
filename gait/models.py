@@ -46,39 +46,39 @@ class CNN(nn.Module):
     
     def forward(self, acc, gyr, mag):
         # input (batch*1*300)
-        acc = self.dropout2d1(F.gelu(F.avg_pool1d(self.conv1(acc), kernel_size=2, stride=1)))
-        gyr = self.dropout2d1(F.gelu(F.avg_pool1d(self.conv1(gyr), kernel_size=2, stride=1)))
-        mag = self.dropout2d1(F.gelu(F.avg_pool1d(self.conv1(mag), kernel_size=2, stride=1)))
+        acc = self.dropout2d1(F.gelu(F.max_pool1d(self.conv1(acc), kernel_size=2, stride=1)))
+        gyr = self.dropout2d1(F.gelu(F.max_pool1d(self.conv1(gyr), kernel_size=2, stride=1)))
+        mag = self.dropout2d1(F.gelu(F.max_pool1d(self.conv1(mag), kernel_size=2, stride=1)))
         # (batch*16*298) [dilation:2 = (batch*16*296) (batch*16*295)]
         logger.debug(f'acc.shape: {acc.shape}, gyr.shape: {gyr.shape}, mag.shape {mag.shape}')
         
-        acc = self.dropout2d1_1(F.gelu(F.avg_pool1d(self.conv1_1(acc), kernel_size=2, stride=1)))
-        gyr = self.dropout2d1_1(F.gelu(F.avg_pool1d(self.conv1_1(gyr), kernel_size=2, stride=1)))
-        mag = self.dropout2d1_1(F.gelu(F.avg_pool1d(self.conv1_1(mag), kernel_size=2, stride=1)))
+        acc = self.dropout2d1_1(F.gelu(F.max_pool1d(self.conv1_1(acc), kernel_size=2, stride=1)))
+        gyr = self.dropout2d1_1(F.gelu(F.max_pool1d(self.conv1_1(gyr), kernel_size=2, stride=1)))
+        mag = self.dropout2d1_1(F.gelu(F.max_pool1d(self.conv1_1(mag), kernel_size=2, stride=1)))
         # (batch*16*298) [dilation:2 = (batch*16*291) (batch*16*290)]
         logger.debug(f'acc.shape: {acc.shape}, gyr.shape: {gyr.shape}, mag.shape {mag.shape}')
         
-        acc = self.dropout2d2(F.gelu(F.avg_pool1d(self.conv2(acc), kernel_size=2, stride=1)))
-        gyr = self.dropout2d2(F.gelu(F.avg_pool1d(self.conv2(gyr), kernel_size=2, stride=1)))
-        mag = self.dropout2d2(F.gelu(F.avg_pool1d(self.conv2(mag), kernel_size=2, stride=1)))
+        acc = self.dropout2d2(F.gelu(F.max_pool1d(self.conv2(acc), kernel_size=2, stride=1)))
+        gyr = self.dropout2d2(F.gelu(F.max_pool1d(self.conv2(gyr), kernel_size=2, stride=1)))
+        mag = self.dropout2d2(F.gelu(F.max_pool1d(self.conv2(mag), kernel_size=2, stride=1)))
         # (batch*16*298) [dilation:2 = (batch*64*141[.5]) (batch*64*140)]
         logger.debug(f'acc.shape: {acc.shape}, gyr.shape: {gyr.shape}, mag.shape {mag.shape}')
 
-        acc = self.dropout2d2_1(F.gelu(F.avg_pool1d(self.conv2_1(acc), kernel_size=2, stride=1)))
-        gyr = self.dropout2d2_1(F.gelu(F.avg_pool1d(self.conv2_1(gyr), kernel_size=2, stride=1)))
-        mag = self.dropout2d2_1(F.gelu(F.avg_pool1d(self.conv2_1(mag), kernel_size=2, stride=1)))
+        acc = self.dropout2d2_1(F.gelu(F.max_pool1d(self.conv2_1(acc), kernel_size=2, stride=1)))
+        gyr = self.dropout2d2_1(F.gelu(F.max_pool1d(self.conv2_1(gyr), kernel_size=2, stride=1)))
+        mag = self.dropout2d2_1(F.gelu(F.max_pool1d(self.conv2_1(mag), kernel_size=2, stride=1)))
         # (batch*16*298) [dilation:2 = (batch*64*66[.5]) (batch*64*65)]
         logger.debug(f'acc.shape: {acc.shape}, gyr.shape: {gyr.shape}, mag.shape {mag.shape}')
 
-        acc = self.dropout2d3(F.gelu(F.avg_pool1d(self.conv3(acc), kernel_size=2, stride=1)))
-        gyr = self.dropout2d3(F.gelu(F.avg_pool1d(self.conv3(gyr), kernel_size=2, stride=1)))
-        mag = self.dropout2d3(F.gelu(F.avg_pool1d(self.conv3(mag), kernel_size=2, stride=1)))
+        acc = self.dropout2d3(F.gelu(F.max_pool1d(self.conv3(acc), kernel_size=2, stride=1)))
+        gyr = self.dropout2d3(F.gelu(F.max_pool1d(self.conv3(gyr), kernel_size=2, stride=1)))
+        mag = self.dropout2d3(F.gelu(F.max_pool1d(self.conv3(mag), kernel_size=2, stride=1)))
         # (batch*16*298) [dilation:2 = (batch*256*29) (batch*256*28)]
         logger.debug(f'acc.shape: {acc.shape}, gyr.shape: {gyr.shape}, mag.shape {mag.shape}')
 
-        acc = self.dropout2d3_1(F.gelu(F.avg_pool1d(self.conv3_1(acc), kernel_size=2, stride=1)))
-        gyr = self.dropout2d3_1(F.gelu(F.avg_pool1d(self.conv3_1(gyr), kernel_size=2, stride=1)))
-        mag = self.dropout2d3_1(F.gelu(F.avg_pool1d(self.conv3_1(mag), kernel_size=2, stride=1)))
+        acc = self.dropout2d3_1(F.gelu(F.max_pool1d(self.conv3_1(acc), kernel_size=2, stride=1)))
+        gyr = self.dropout2d3_1(F.gelu(F.max_pool1d(self.conv3_1(gyr), kernel_size=2, stride=1)))
+        mag = self.dropout2d3_1(F.gelu(F.max_pool1d(self.conv3_1(mag), kernel_size=2, stride=1)))
         # (batch*16*298) [dilation:2 = (batch*256*10[.5]) (batch*256*9)]
         logger.debug(f'acc.shape: {acc.shape}, gyr.shape: {gyr.shape}, mag.shape {mag.shape}')
 
