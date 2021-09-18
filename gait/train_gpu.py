@@ -12,11 +12,17 @@ import sys
 import numpy as np
 from tqdm import tqdm
 from sklearn.model_selection import KFold
+import gc
+import pandas as pd
+import pdb
+from torch.utils.tensorboard import SummaryWriter
 
 
 logger = get_logger(__name__)
 # sys.stdout=LoggerWriter(logger.info)
 # sys.stderr=LoggerWriter(logger.error)
+writer = SummaryWriter()
+
 
 def train_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
     losses = []
@@ -51,7 +57,9 @@ def train_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
             accuracies.append(acc.item())
         
         print(f'epoch[{epoch+1}], step {step+1}: acc = {np.mean(accuracies): .5f}, loss = {np.mean(losses): .5f}', end='\r')
-    print('\b', end=', ')
+    
+    print('\n', end='')
+    return np.mean(losses), np.mean(accuracies)
 
 
 def eval_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
@@ -68,8 +76,8 @@ def eval_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
             acc = (pred == targets).float().mean()
             accuracies.append(acc.item())
         
-        print(F'val_acc = {np.mean(accuracies): .5f}, val_loss = {np.mean(losses): .5f}')
-
+    print(f'val_acc = {np.mean(accuracies): .5f}, val_loss = {np.mean(losses): .5f}')
+    return np.mean(losses), np.mean(accuracies)
 
 def kfold_run(FLAGS, config_dict):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -83,6 +91,10 @@ def kfold_run(FLAGS, config_dict):
     targets = torch.tensor(targets, dtype=torch.long, device=device)
 
     kf = KFold(n_splits=5)
+    
+    # results dataframe
+    res_df = pd.DataFrame(np.empty((kf.n_splits, 4)), columns=['train_loss', 'train_acc', 'eval_loss', 'eval_acc'], index=[f'fold{fold+1}' for fold in range(kf.n_splits)])
+    
     for fold, (train_idx, eval_idx) in enumerate(kf.split(targets)):
         print(f'\nfold: {fold+1}\n')
 
@@ -92,25 +104,42 @@ def kfold_run(FLAGS, config_dict):
             shuffle=True,
             drop_last=True
         )
-
+        # logger.info(f'train sample size: {train_idx.shape[0]}')
+        
         eval_loader = GaitDataLoader(
             acc[eval_idx], gyr[eval_idx], mag[eval_idx], targets[eval_idx],
             batch_size=eval_idx.shape[0],
             shuffle=False
         )
+        # logger.info(f'eval sample size: {eval_idx.shape[0]}')
 
         #init model, optimizer, loss_func, scheduler
         model = CNN().to(device=device)
 
         optimizer = optim.Adam(model.parameters(), lr = FLAGS['LEARNING_RATE'])
         loss_func = nn.CrossEntropyLoss()
-        # if FLAGS['SCHEDULER']:
-        #     scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=lambda epoch: 0.9**epoch)
+
+        if FLAGS['SCHEDULER']:
+            scheduler = optim.lr_scheduler.LambdaLR(optimizer=optimizer, lr_lambda=lambda epoch: 0.9**epoch, verbose=True)
 
         
 
         for epoch in range(FLAGS['EPOCHS']):
             # training
-            train_func(model, train_loader, epoch, optimizer, loss_func, FLAGS)
-            eval_func(model, eval_loader, epoch, optimizer, loss_func, FLAGS)
+            gc.collect()
+            train_loss, train_acc = train_func(model, train_loader, epoch, optimizer, loss_func, FLAGS)
+            eval_loss, eval_acc = eval_func(model, eval_loader, epoch, optimizer, loss_func, FLAGS)
+            res_df.iloc[fold] = [train_loss, train_acc, eval_loss, eval_acc]
+            
+            # if(epoch==49):    
+            #     pdb.set_trace()
+            #     for idx, param in enumerate(model.parameters()):
+            #         print(f'param.grad.shape: {param.grad.shape}')
+            #         print(f'idx {idx}: {param.grad}')
 
+            # scheduler to change lr
+            if FLAGS['SCHEDULER'] and (epoch+1)%10 == 0:
+                scheduler.step()
+    
+    # saving results
+    res_df.to_csv('results/kfold_5folds.csv')

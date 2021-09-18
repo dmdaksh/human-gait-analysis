@@ -13,7 +13,7 @@ class Config:
   })
   MAT_FILE: str = field(default='../gait_data/22008945')
   INPUT_DATA: str = field(default='../../../../input_data/')
-  PREPROCESSED_ARR: str = field(default='preprocessed_arr.pkl')
+  PREPROCESSED_ARR: str = field(default='data/preprocessed_arr.pkl')
   # INPUT_DATA: str = field(default='../gait_data/input_data/')
   SURFACE_TRIALS: dict = field(default_factory=lambda:{
         'CALIB':  [1, 2, 3]                   # Calibration
@@ -48,15 +48,15 @@ class Flags:
   WINDOW_SIZE: int = field(default=3)
   OVERLAP: int = field(default=1)
   MODE: str = field(default='train')
-  BATCH_SIZE: int = field(default=384) # rtx5000 tensorcores = 384
-  LEARNING_RATE: float = field(default=1e-5)
+  BATCH_SIZE: int = field(default=2048) # rtx5000 tensorcores = 384
+  LEARNING_RATE: float = field(default=1e-3)
   MOMENTUM: float = field(default=0.5)
-  EPOCHS: int = field(default=10)
+  EPOCHS: int = field(default=70)
   LOG_STEPS: int = field(default=10)
   METRICS_DEBUG: bool = field(default=False)
   WORLD_SIZE: int = field(default=8)
-  SCHEDULER: bool = field(default=False)
-  WEIGHT_DECAY: float = field(default=0.01)
+  SCHEDULER: bool = field(default=True)
+  WEIGHT_DECAY: float = field(default=0.001)
 
 
 

@@ -1,6 +1,6 @@
 # create a log directory to store logs if logs directory doesn't exist
 mkdir -p logs
-
+mkdir -p results
 # env vars
 export LOG_LEVEL=info
 

@@ -36,6 +36,6 @@ if __name__ == '__main__':
     
 
     if not os.path.isfile(config_dict['PREPROCESSED_ARR']):
-        ReadData().dump_processed_data(FLAGS, config_dict['PREPROCESSED_ARR'])
+        ReadData()._dump_processed_data(FLAGS, config_dict['PREPROCESSED_ARR'])
     
     kfold_run(FLAGS, config_dict)
