@@ -1,6 +1,8 @@
 # create a log directory to store logs if logs directory doesn't exist
 mkdir -p logs
+mkdir -p data
 mkdir -p results
+
 # env vars
 export LOG_LEVEL=info
 
@@ -8,4 +10,4 @@ export LOG_LEVEL=info
 # export XLA_USE_BF16=1
 
 # running main file
-python3 -m gait.main --exclude_surface CALIB
+python3 -m gait.main --exclude_surface CALIB --pause_instance
