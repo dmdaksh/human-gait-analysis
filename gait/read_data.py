@@ -88,12 +88,12 @@ class ReadData:
             np.asarray(surface_labels, dtype=np.long).reshape(-1)
         )
     
-    def dump_processed_data(self, FLAGS, path):
+    def _dump_processed_data(self, FLAGS, path):
         data = self._init_data(FLAGS)
         with open(path, 'wb') as f:
             pkl.dump(data, f)
 
-    def load_processed_data(self, path):
+    def _load_processed_data(self, path):
         with open(path, 'rb') as f:
             data = pkl.load(f)
         return data

@@ -50,7 +50,7 @@ def train_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
             acc = (pred == targets).float().mean()
             accuracies.append(acc.item())
         
-        print(f'epoch[{epoch}], step {step}/{FLAGS["EPOCHS"]//FLAGS["BATCH_SIZE"]}: acc = {np.mean(accuracies)}, loss = {np.mean(losses)}', end='\r')
+        print(f'epoch[{epoch+1}], step {step+1}: acc = {np.mean(accuracies): .5f}, loss = {np.mean(losses): .5f}', end='\r')
     print('\b', end=', ')
 
 
@@ -68,14 +68,14 @@ def eval_func(model, gait_loader, epoch, optimizer, loss_func, FLAGS):
             acc = (pred == targets).float().mean()
             accuracies.append(acc.item())
         
-        print(F'val_acc = {np.mean(accuracies)}, val_loss = {np.mean(losses)}')
+        print(F'val_acc = {np.mean(accuracies): .5f}, val_loss = {np.mean(losses): .5f}')
 
 
 def kfold_run(FLAGS, config_dict):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # read data, data loader
-    acc, gyr, mag, targets = ReadData().load_processed_data(config_dict['PREPROCESSED_ARR'])
+    acc, gyr, mag, targets = ReadData()._load_processed_data(config_dict['PREPROCESSED_ARR'])
     
     acc = torch.tensor(acc, dtype=torch.float32, device=device)
     gyr = torch.tensor(gyr, dtype=torch.float32, device=device)
