@@ -1,27 +1,25 @@
-from dataclasses import asdict
-from gait.log import get_logger
-from gait.config import Config
-from gait.models import CNN
-from gait.gait_dataset import GaitDataset
-from gait.models import CNN
-from gait.read_data import ReadData
+import time
+
 import torch
 import torch.nn as nn
+
+from gait.gait_dataset import GaitDataset
+from gait.log import get_logger
+from gait.models import CNN
+from gait.read_data import ReadData
 import torch_xla.core.xla_model as xm
 import torch_xla.debug.metrics as met
 import torch_xla.distributed.parallel_loader as pl
 import torch_xla.distributed.xla_multiprocessing as xmp
-import time
-import gc
-
 
 logger = get_logger(__name__)
 
+
 def run(FLAGS):
     logger.debug('Inside run')
-    
+
     data = ReadData()._init_data(FLAGS)
-    
+
     def train_gait(rank, FLAGS):
         # get dataset
         gait_ds = GaitDataset(*data)
@@ -33,8 +31,7 @@ def run(FLAGS):
             dataset=gait_ds,
             num_replicas=FLAGS['WORLD_SIZE'],
             rank=rank,
-            shuffle=True        
-        )
+            shuffle=True)
 
         # get dataloader
         logger.debug('[xla:{}] Initialize Loader'.format(xm.get_ordinal()))
@@ -43,13 +40,12 @@ def run(FLAGS):
             batch_size=FLAGS['BATCH_SIZE'],
             sampler=gait_sampler,
             num_workers=0,
-            drop_last=True
-        )
+            drop_last=True)
 
         # define learning rate
         lr = FLAGS['LEARNING_RATE'] * xm.xrt_world_size()
 
-        # get device 
+        # get device
         device = xm.xla_device()
 
         # get model
@@ -62,8 +58,9 @@ def run(FLAGS):
 
         # define loss func
         loss_fn = nn.NLLLoss()
+
         # loss_fn = nn.CrossEntropyLoss()
-        
+
         # train func
         def train_func(loader):
             # tracker = xm.RateTracker() ##
@@ -86,8 +83,9 @@ def run(FLAGS):
                 xm.optimizer_step(optimizer)
 
                 # printing progress
-                if batch_idx%FLAGS['LOG_STEPS'] == 0:
-                    print('[xla:{}]({}) Loss={:.5f}'.format(rank, batch_idx, loss.item()))
+                if batch_idx % FLAGS['LOG_STEPS'] == 0:
+                    print('[xla:{}]({}) Loss={:.5f}'.format(
+                        rank, batch_idx, loss.item()))
             # reset to eval model
             model.eval()
 
@@ -97,38 +95,40 @@ def run(FLAGS):
             correct = 0
             total_samples = 0
             with torch.no_grad():
+                accuracy = 0.0
                 for batch_idx, (acc, gyr, mag, targets) in enumerate(loader):
                     output = model(acc, gyr, mag)
                     pred = torch.max(output, dim=1)[1]
 
                     correct += (pred == targets).sum()
                     total_samples += len(targets)
-                
-                    accuracy = 100.0 * correct / total_samples
-                    
-                return accuracy
 
+                    accuracy = 100.0 * correct / total_samples
+
+                return accuracy
 
         # training/eval loop
         if FLAGS['MODE'] == 'train':
             for epoch in range(FLAGS['EPOCHS']):
                 start_time = time.perf_counter()
-                
+
                 print(f'Loading data for rank: {rank}')
-                device_loader = pl.ParallelLoader(gait_loader, [device]).per_device_loader(device)
+                device_loader = pl.ParallelLoader(
+                    gait_loader, [device]).per_device_loader(device)
 
                 # calling train_func function to train for one epoch
                 print(f'Starting training for rank: {rank}')
                 train_func(device_loader)
 
-                print(f'[xla:{rank}] Completed epoch {epoch+1} & time taken: {time.perf_counter()-start_time}')
+                print(f'[xla:{rank}] Completed epoch {epoch+1} \
+                            & time taken: {time.perf_counter()-start_time}')
 
         elif FLAGS['MODE'] == 'eval':
             pass
-    
+
     logger.info('Started training')
-    xmp.spawn(train_gait, args=(FLAGS,), nprocs=FLAGS['WORLD_SIZE'], start_method='fork')
 
-
-        
-
+    xmp.spawn(train_gait,
+              args=(FLAGS, ),
+              nprocs=FLAGS['WORLD_SIZE'],
+              start_method='fork')
