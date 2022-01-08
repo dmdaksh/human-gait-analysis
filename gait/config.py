@@ -13,7 +13,7 @@ class Config:
             'debug': logging.DEBUG
         })
     MAT_FILE: str = field(default='../gait_data/22008945')
-    INPUT_DATA: str = field(default='../../../../input_data/')
+    INPUT_DATA: str = field(default='../input_data/')
     PREPROCESSED_ARR: str = field(default='data/preprocessed_arr.pkl')
     SURFACE_TRIALS: dict = field(
         default_factory=lambda: {
