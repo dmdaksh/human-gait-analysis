@@ -1,12 +1,9 @@
 import torch
 from torch.utils.data import Dataset
 
-from gait import log
-
-logger = log.get_logger(__name__)
-
 
 class GaitDataset(Dataset):
+
     def __init__(self, acc, gyr, mag, targets, device=None) -> None:
         self.acc = torch.tensor(acc, dtype=torch.float32, device=device)
         self.gyr = torch.tensor(gyr, dtype=torch.float32, device=device)

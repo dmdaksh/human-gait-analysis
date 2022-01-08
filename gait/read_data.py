@@ -9,10 +9,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 from tqdm import tqdm
 
-from gait import log
 from gait.config import Config
-
-logger = log.get_logger(__name__)
 
 
 class ReadData:
@@ -28,7 +25,6 @@ class ReadData:
         self.onehot_encoder = OneHotEncoder()
 
     def _get_filenames(self, subject, FLAGS):
-        logger.debug('Inside _get_filenames')
         filenames = set()
         all_filenames = set(
             glob.glob(
@@ -46,15 +42,12 @@ class ReadData:
                         if (split_filename[2][-2:] ==
                                 self.config_dict['SENSOR_LOCS'][loc]):
                             filenames.add(filename)
-        logger.debug('Exiting _get_filenames')
         return filenames
 
     def mean_fn(self, x):
         return x.mean()
 
     def _init_data(self, FLAGS):
-        logger.debug('Inside _init_data')
-
         trial_surfaces = {
             v_k: k
             for k, v in self.config_dict['SURFACE_TRIALS'].items() for v_k in v

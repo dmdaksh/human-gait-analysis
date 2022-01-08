@@ -1,22 +1,17 @@
 import time
 
-import torch
-import torch.nn as nn
-
 from gait.gait_dataset import GaitDataset
-from gait.log import get_logger
 from gait.models import CNN
 from gait.read_data import ReadData
+import torch
+import torch.nn as nn
 import torch_xla.core.xla_model as xm
 import torch_xla.debug.metrics as met
 import torch_xla.distributed.parallel_loader as pl
 import torch_xla.distributed.xla_multiprocessing as xmp
 
-logger = get_logger(__name__)
-
 
 def run(FLAGS):
-    logger.debug('Inside run')
 
     data = ReadData()._init_data(FLAGS)
 
@@ -26,7 +21,6 @@ def run(FLAGS):
         xm.master_print(f'size of gait_ds: {len(gait_ds)}')
 
         # get sampler
-        logger.debug('[xla:{}] Initialize sampler'.format(xm.get_ordinal()))
         gait_sampler = torch.utils.data.distributed.DistributedSampler(
             dataset=gait_ds,
             num_replicas=FLAGS['WORLD_SIZE'],
@@ -34,7 +28,6 @@ def run(FLAGS):
             shuffle=True)
 
         # get dataloader
-        logger.debug('[xla:{}] Initialize Loader'.format(xm.get_ordinal()))
         gait_loader = torch.utils.data.DataLoader(
             dataset=gait_ds,
             batch_size=FLAGS['BATCH_SIZE'],
@@ -125,8 +118,6 @@ def run(FLAGS):
 
         elif FLAGS['MODE'] == 'eval':
             pass
-
-    logger.info('Started training')
 
     xmp.spawn(train_gait,
               args=(FLAGS, ),

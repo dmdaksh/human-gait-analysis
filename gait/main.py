@@ -2,7 +2,6 @@ import argparse
 from dataclasses import asdict
 import os
 
-from gait import log
 from gait.config import Config, Flags
 from gait.read_data import ReadData
 from gait.train_gpu import kfold_run
@@ -35,15 +34,12 @@ if __name__ == '__main__':
     exclude_loc = set(args.exclude_loc) if args.exclude_loc else set()
     pause_instance = args.pause_instance
 
-    logger = log.get_logger(__name__)
+    print('human-gait-analysis')
 
-    logger.info('human-gait-analysis')
-
-    logger.info('Included surfaces: {}'.format(config_dict['SURFACES'] -
-                                               exclude_surface))
-    logger.info('Included sensor locs: {}'.format(config_dict['LOCS'] -
-                                                  exclude_loc))
-    logger.info('Pause Instance: {}'.format(pause_instance))
+    print('Included surfaces: {}'.format(config_dict['SURFACES'] -
+                                         exclude_surface))
+    print('Included sensor locs: {}'.format(config_dict['LOCS'] - exclude_loc))
+    print('Pause Instance: {}'.format(pause_instance))
 
     FLAGS = asdict(
         Flags(SURFACES=config_dict['SURFACES'] - exclude_surface,
