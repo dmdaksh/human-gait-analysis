@@ -6,15 +6,10 @@ from sklearn.model_selection import KFold
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
 
 from gait.gait_dataloader import GaitDataLoader
 from gait.models import CNN
 from gait.read_data import ReadData
-
-# sys.stdout=LoggerWriter(logger.info)
-# sys.stderr=LoggerWriter(logger.error)
-writer = SummaryWriter()
 
 
 def train_func(model, gait_loader, epoch, optimizer, loss_func):
@@ -118,7 +113,9 @@ def kfold_run(FLAGS, config_dict):
         # init model, optimizer, loss_func, scheduler
         model = CNN().to(device=device)
 
-        optimizer = optim.Adam(model.parameters(), lr=FLAGS['LEARNING_RATE'])
+        optimizer = optim.Adam(model.parameters(),
+                               lr=FLAGS['LEARNING_RATE'],
+                               weight_decay=FLAGS['WEIGHT_DECAY'])
         loss_func = nn.CrossEntropyLoss()
 
         for epoch in range(FLAGS['EPOCHS']):
